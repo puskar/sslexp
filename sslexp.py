@@ -30,9 +30,9 @@ def compare_dates(expiration_date):
 
 def compare_certificates(domain_expiration_date, file_expiration_date):
     if domain_expiration_date > file_expiration_date:
-        print(f"The remote certificate for the domain is valid longer than the certificate in the file.")
+        print("The remote certificate for the domain is valid longer than the certificate in the file.")
     elif domain_expiration_date < file_expiration_date:
-        print(f"The certificate in the file is valid longer than the remote certificate for the domain.")
+        print("The certificate in the file is valid longer than the remote certificate for the domain.")
     else:
         print(f"Both certificates have the same expiration date: {domain_expiration_date}.")
 

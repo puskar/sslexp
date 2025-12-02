@@ -6,5 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "crypto>=1.4.1",
+    "flask>=3.1.2",
+    "icalendar>=6.3.2",
     "pyopenssl>=25.1.0",
 ]
