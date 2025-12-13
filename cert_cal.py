@@ -1,22 +1,29 @@
 import sslexp
 import icalendar
+import ipaddress
+import socket
 from datetime import timedelta
-from flask import Flask, make_response
+from flask import Flask, abort, make_response
 
-
-domains = ["api.puskar.net"]
-expiry_data = {}
-for domain in domains:
-    expiry_info = sslexp.get_tls_expiration_date(domain)
-    expiry_data[domain] = expiry_info
-
-def add_alarm(days_before):
+def add_alarm(days_before, domain):
     alarm = icalendar.Alarm()
     alarm.add('action', 'DISPLAY')
     alarm.add('description', f'{domain} expiry reminder')
     alarm.add('trigger', timedelta(days =-days_before))
     return alarm
     
+def check_hostname(hostname):
+    try:
+        ipaddress.ip_address(hostname)
+        return False
+    except ValueError:
+        pass
+
+    try:
+        socket.gethostbyname(hostname) 
+        return True
+    except socket.gaierror:
+        return False
 
 def create_certcal(expiry_data):
     cert_cal = icalendar.Calendar()
@@ -30,16 +37,25 @@ def create_certcal(expiry_data):
         event.add('description', f'{domain} expires')
         event.add('dtstamp', expiry_date)
         event.add('uid', f'{domain}-{expiry_date.timestamp()}')
-        event.add_component(add_alarm(7))
+        event.add_component(add_alarm(7, domain))
         cert_cal.add_component(event)
     
     return cert_cal
 
 flask_app = Flask("certcal")
-@flask_app.route('/certcal/',methods=['GET'])
 
-def main():
-    
+@flask_app.route('/certcal/<domains>', methods=['GET'])
+
+def main(domains):
+    expiry_data = {}
+    for domain in domains.split(','):
+        if check_hostname(domain):
+            try:
+                expiry_info = sslexp.get_tls_expiration_date(domain)
+                expiry_data[domain] = expiry_info
+            except ConnectionRefusedError:
+                continue
+
     cert_cal = create_certcal(expiry_data)
     response = make_response(cert_cal.to_ical().decode('utf-8'))
     response.headers['Content-Type'] = 'text/calendar; charset=utf-8'
