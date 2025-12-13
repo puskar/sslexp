@@ -3,7 +3,7 @@ import icalendar
 import ipaddress
 import socket
 from datetime import timedelta
-from flask import Flask, abort, make_response
+from flask import Flask, make_response
 
 def add_alarm(days_before, domain):
     alarm = icalendar.Alarm()
