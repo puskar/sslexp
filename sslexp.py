@@ -13,7 +13,7 @@ def get_tls_expiration_date(domain):
         with context.wrap_socket(sock, server_hostname=domain) as ssock:
             cert = ssock.getpeercert()
             expiration_date_str = cert['notAfter']
-            expiration_date = datetime.strptime(expiration_date_str, '%b %d %H:%M:%S %Y %Z')
+            expiration_date = datetime.strptime(expiration_date_str, '%b %d %H:%M:%S %Y %Z').replace(tzinfo=timezone.utc)
             return expiration_date
 
 def get_tls_expiration_date_from_file(cert_file_path):
@@ -51,7 +51,8 @@ def update_certs(domain, local_path, remote_path):
         print(f"Local certificate file {local_path} does not exist.")
         return
     
-    try:        subprocess.run(['ssh', f'root@{domain}', f'test -d {remote_path}'], check=True)  
+    try:
+        subprocess.run(['ssh', f'root@{domain}', f'test -d {remote_path}'], check=True)  
     except subprocess.CalledProcessError:
         print(f"Remote certificates file {remote_path} does not exist.")
         return
