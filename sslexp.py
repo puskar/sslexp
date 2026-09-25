@@ -21,7 +21,7 @@ def get_tls_expiration_date_from_file(cert_file_path):
         cert_data = cert_file.read()
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_data)
         expiration_date_str = cert.get_notAfter().decode('ascii')
-        expiration_date = datetime.strptime(expiration_date_str, '%Y%m%d%H%M%SZ')
+        expiration_date = datetime.strptime(expiration_date_str, '%Y%m%d%H%M%SZ').replace(tzinfo=timezone.utc)
         return expiration_date
 
 def compare_dates(expiration_date):
